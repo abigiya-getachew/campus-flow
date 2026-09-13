@@ -1,0 +1,183 @@
+/* CampusFlow style reminder: Paper Trail, Electric Ink — contemporary editorialism with Swiss information design, warm paper neutrals, ink navy, and electric cobalt reserved for the next move. */
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 5px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 6px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.85rem;
+  --background: #f7f8fa;
+  --foreground: #1e2433;
+  --card: #ffffff;
+  --card-foreground: #1e2433;
+  --popover: #ffffff;
+  --popover-foreground: #1e2433;
+  --primary: #3157e8;
+  --primary-foreground: #ffffff;
+  --secondary: #ebece8;
+  --secondary-foreground: #454c5c;
+  --muted: #efefeb;
+  --muted-foreground: #747b88;
+  --accent: #e7edff;
+  --accent-foreground: #2043c6;
+  --destructive: #bb4c42;
+  --destructive-foreground: #ffffff;
+  --border: #e4e7ec;
+  --input: #d9dee7;
+  --ring: #3157e8;
+  --chart-1: #3157e8;
+  --chart-2: #db8b62;
+  --chart-3: #81a993;
+  --chart-4: #e3b84b;
+  --chart-5: #7b83a0;
+  --sidebar: #202838;
+  --sidebar-foreground: #f4f3ed;
+  --sidebar-primary: #8fa7ff;
+  --sidebar-primary-foreground: #16235c;
+  --sidebar-accent: #2c3548;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #374155;
+  --sidebar-ring: #8fa7ff;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  html { background: var(--background); }
+  body {
+    @apply bg-background text-foreground;
+    font-family: "DM Sans", sans-serif;
+    min-width: 320px;
+  }
+  button:not(:disabled), [role="button"]:not([aria-disabled="true"]), [type="button"]:not(:disabled), [type="submit"]:not(:disabled), a[href], select:not(:disabled), input[type="checkbox"]:not(:disabled), input[type="radio"]:not(:disabled) { @apply cursor-pointer; }
+  ::selection { background: #d5defe; color: #1e2433; }
+}
+
+@layer components {
+  .font-display { font-family: "Fraunces", Georgia, serif; }
+  .font-mono { font-family: "IBM Plex Mono", monospace; }
+  .app-texture {
+    background-color: #f7f8fa;
+  }
+  .paper-card {
+    background: rgba(255, 255, 255, .98);
+    box-shadow: 0 1px 2px rgba(30,36,51,.03), 0 10px 26px rgba(43, 48, 63, .035);
+  }
+  .ink-shadow { box-shadow: 0 8px 20px rgba(49, 87, 232, .08); }
+  .focus-ring:focus-visible { outline: 3px solid rgba(49,87,232,.34); outline-offset: 3px; }
+  .section-kicker { color: #7b8190; font: 600 10px/1 "IBM Plex Mono", monospace; letter-spacing: .15em; text-transform: uppercase; }
+  .sidebar-noise { background: #202838; }
+}
+
+@keyframes rise-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes draw-in { from { opacity: 0; transform: scaleX(.7); transform-origin: left; } to { opacity: 1; transform: scaleX(1); transform-origin: left; } }
+.animate-rise { animation: rise-in .45s var(--ease-out) both; }
+.animate-draw { animation: draw-in .55s var(--ease-out) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}
+
+/* ==========================================================================
+   Landing (marketing) tokens — appended for pages/Landing.tsx only.
+   The dashboard tokens above are untouched; nothing here overrides them.
+   ========================================================================== */
+
+@theme inline {
+  --color-brand-50: #e7edff;
+  --color-brand-100: #d5dcf8;
+  --color-brand-200: #b8c4f0;
+  --color-brand-300: #9baae8;
+  --color-brand-400: #7e90e0;
+  --color-brand-500: #6176d8;
+  --color-brand-600: #3157e8;
+  --color-brand-700: #2549d5;
+  --color-brand-800: #1a3bc2;
+  --color-brand-900: #0f2daf;
+  --color-brand-950: #081f7a;
+  --color-brand-terracotta: #db8b62;
+  --color-brand-sage: #81a993;
+  --color-brand-purple: #b68cdb;
+  --color-ink: #1e2433;
+  --color-slate-soft: #747b88;
+  --color-canvas: #f7f8fa;
+}
+
+@layer base {
+  /* The existing prefers-reduced-motion block above already forces
+     `scroll-behavior: auto !important`, so this stays safe. */
+  html { scroll-behavior: smooth; }
+}
+
+@layer components {
+  .font-inter { font-family: "Inter", system-ui, sans-serif; }
+
+  /* Anchor targets clear the sticky landing navbar (~72px + breathing room). */
+  .anchor-section { scroll-margin-top: 88px; }
+
+  /* Glassmorphism — hero/showcase floats only. */
+  .landing-glass {
+    background: rgba(255, 255, 255, .66);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    backdrop-filter: blur(20px) saturate(1.4);
+    border: 1px solid rgba(255, 255, 255, .6);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .05), 0 16px 40px rgba(49, 87, 232, .12);
+  }
+
+  /* Faint dot-grid texture for the hero canvas. */
+  .landing-dot-grid {
+    background-image: radial-gradient(rgba(49, 87, 232, .12) 1px, transparent 1px);
+    background-size: 28px 28px;
+    -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, black 30%, transparent 75%);
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, black 30%, transparent 75%);
+  }
+}
+
+/* Layered soft shadows tinted with blue at low alpha.
+   Defined as @utility so they compose with variants (hover:, etc.). */
+@utility landing-shadow-soft {
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 12px 32px rgba(49, 87, 232, .08);
+}
+@utility landing-shadow-lift {
+  box-shadow: 0 2px 4px rgba(15, 23, 42, .04), 0 20px 44px rgba(49, 87, 232, .14);
+}
