@@ -8,7 +8,6 @@ import { LANDING_EASE } from "./Reveal";
 const ANCHOR_LINKS = [
   { label: "Features", href: "#features" },
   { label: "How it Works", href: "#how-it-works" },
-  { label: "Testimonials", href: "#testimonials" },
 ] as const;
 
 export function Logo({ className }: { className?: string }) {
@@ -18,7 +17,7 @@ export function Logo({ className }: { className?: string }) {
       className={cn("flex items-center gap-2.5 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-600", className)}
       aria-label="CampusFlow — home"
     >
-      <span className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-brand-600 to-violet-600 shadow-[0_4px_14px_rgba(79,70,229,0.35)]">
+      <span className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-brand-600 to-brand-700 shadow-[0_4px_14px_rgba(49,87,232,0.35)]">
         <GraduationCap className="size-[18px] text-white" aria-hidden="true" />
       </span>
       <span className="text-[17px] font-bold tracking-[-0.02em] text-ink">
@@ -70,14 +69,14 @@ export function Navbar() {
 
         <div className="hidden items-center gap-2 md:flex">
           <Link
-            href="/app"
+            href="/login"
             className="rounded-full px-4 py-2 text-[14px] font-semibold text-ink transition-colors duration-200 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
           >
             Login
           </Link>
           <Link
-            href="/app"
-            className="rounded-full bg-brand-600 px-5 py-2.5 text-[14px] font-semibold text-white shadow-[0_4px_16px_rgba(79,70,229,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-[0_8px_24px_rgba(79,70,229,0.45)] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+            href="/register"
+            className="rounded-full bg-brand-600 px-5 py-2.5 text-[14px] font-semibold text-white shadow-[0_4px_16px_rgba(49,87,232,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-[0_8px_24px_rgba(49,87,232,0.45)] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
           >
             Get Started
           </Link>
@@ -123,14 +122,14 @@ export function Navbar() {
               ))}
               <div className="mt-3 flex flex-col gap-2 border-t border-slate-200/70 pt-4">
                 <Link
-                  href="/app"
+                  href="/login"
                   onClick={() => setOpen(false)}
                   className="rounded-xl px-4 py-3 text-center text-[15px] font-semibold text-ink transition-colors hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
                 >
                   Login
                 </Link>
                 <Link
-                  href="/app"
+                  href="/register"
                   onClick={() => setOpen(false)}
                   className="rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 px-4 py-3 text-center text-[15px] font-semibold text-white shadow-[0_6px_20px_rgba(49,87,232,0.35)] transition-transform active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
                 >
