@@ -6,6 +6,9 @@ export interface IUser extends mongoose.Document {
   password: string;
 }
 
+// RFC 5322-compatible email pattern (tighter than the previous \S+@\S+\.\S+).
+const EMAIL_RE = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
+
 const userSchema = new mongoose.Schema<IUser>(
   {
     name: { type: String, required: true, trim: true, maxlength: 80 },
@@ -15,7 +18,7 @@ const userSchema = new mongoose.Schema<IUser>(
       unique: true,
       lowercase: true,
       trim: true,
-      match: /^\S+@\S+\.\S+$/,
+      match: [EMAIL_RE, "Please enter a valid email address."],
     },
     password: { type: String, required: true, minlength: 8, select: false },
   },

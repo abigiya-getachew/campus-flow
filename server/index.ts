@@ -1,6 +1,9 @@
 import "./env.js";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 import { createServer } from "http";
 import mongoose from "mongoose";
 import path from "path";
@@ -26,24 +29,44 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
 
+  // ── Security headers ──────────────────────────────────────────────────────
+  app.use(helmet());
+
+  // ── CORS ──────────────────────────────────────────────────────────────────
   const allowedOrigins = (process.env.CORS_ORIGIN ?? "http://localhost:5173")
     .split(",")
     .map((origin) => origin.trim());
   app.use(cors({ origin: allowedOrigins, credentials: true }));
-  app.use(express.json());
 
+  // ── Body parsing (20 KB cap — no oversized JSON payloads) ────────────────
+  app.use(express.json({ limit: "20kb" }));
+  app.use(cookieParser());
+
+  // ── Rate limiting on auth endpoints ──────────────────────────────────────
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 20,                   // 20 attempts per IP per window
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: "Too many attempts. Please try again later." },
+  });
+  app.use("/api/auth/login", authLimiter);
+  app.use("/api/auth/register", authLimiter);
+
+  // ── API routes ────────────────────────────────────────────────────────────
   app.use("/api/auth", authRoutes);
   app.use("/api/dashboard", dashboardRoutes);
   app.use("/api", (_req, res) => {
     res.status(404).json({ message: "Not found" });
   });
 
-  // Serve static files from client/dist
+  // ── Static client bundle ──────────────────────────────────────────────────
   const staticPath = path.resolve(__dirname, "..", "client", "dist");
   app.use(express.static(staticPath));
 
-  // Handle client-side routing - serve index.html for all non-API routes
-  app.get("*", (_req, res) => {
+  // ── SPA fallback — explicitly exclude /api/* so mis-typed API paths return
+  //    the 404 handler above rather than index.html with a 200. ──────────────
+  app.get(/^(?!\/api).*/, (_req, res) => {
     res.sendFile(path.join(staticPath, "index.html"));
   });
 

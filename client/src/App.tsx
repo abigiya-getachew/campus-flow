@@ -1,8 +1,7 @@
 /* CampusFlow style reminder: keep the shell quiet and editorial; navigation is a persistent ink-navy rail, while cobalt marks the selected action. */
-import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { ThemeProvider } from "@/contexts/ThemeContext";
+import { Toaster } from "./components/ui/sonner";
+import { AuthProvider } from "./contexts/AuthContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -17,22 +16,20 @@ function App() {
     <ErrorBoundary>
       <AuthProvider>
         <ThemeProvider defaultTheme="light">
-          <TooltipProvider>
-            <Toaster position="bottom-right" />
-            <Switch>
-              <Route path="/" component={Landing} />
-              <Route path="/login" component={Login} />
-              <Route path="/register" component={Register} />
-              <Route path="/app">
-                {() => (
-                  <ProtectedRoute>
-                    <Home />
-                  </ProtectedRoute>
-                )}
-              </Route>
-              <Route component={NotFound} />
-            </Switch>
-          </TooltipProvider>
+          <Toaster position="bottom-right" />
+          <Switch>
+            <Route path="/" component={Landing} />
+            <Route path="/login" component={Login} />
+            <Route path="/register" component={Register} />
+            <Route path="/app">
+              {() => (
+                <ProtectedRoute>
+                  <Home />
+                </ProtectedRoute>
+              )}
+            </Route>
+            <Route component={NotFound} />
+          </Switch>
         </ThemeProvider>
       </AuthProvider>
     </ErrorBoundary>

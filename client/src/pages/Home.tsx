@@ -37,37 +37,19 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { createDashboardAssignment, createDashboardCourse, fetchDashboard, updateDashboardAssignment, updateDashboardCourse, type DashboardAssignment, type DashboardCourse } from "@/lib/dashboardApi";
+import { cn } from "@/lib/utils";
+import {
+  createDashboardAssignment,
+  createDashboardCourse,
+  fetchDashboard,
+  updateDashboardAssignment,
+  updateDashboardCourse,
+  type Assignment,
+  type Course,
+} from "@/lib/dashboardApi";
 
 type View = "overview" | "assignments" | "schedule" | "courses" | "grades" | "planner";
-type Status = "not started" | "in progress" | "complete";
-
-type Assignment = {
-  id: number | string;
-  title: string;
-  course: string;
-  courseCode: string;
-  due: string;
-  dueLabel: string;
-  effort: string;
-  effortHours: number;
-  weight: number;
-  status: Status;
-  color: string;
-  note?: string;
-};
-
-type Course = {
-  id: number | string;
-  name: string;
-  code: string;
-  instructor: string;
-  grade: number;
-  letter: string;
-  color: string;
-  completed: number;
-  total: number;
-};
+type Status = Assignment["status"];
 
 type IconType = ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
 
@@ -125,9 +107,7 @@ function shortMonthDay(date: Date) {
   return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(date);
 }
 
-function classNames(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(" ");
-}
+const classNames = cn;
 
 function AppLogo({ compact = false }: { compact?: boolean }) {
   return (
@@ -176,8 +156,8 @@ function Topbar({ view, onAdd, onMenu, sidebarCollapsed }: { view: View; onAdd: 
   const { user, logout } = useAuth();
   const [, navigate] = useLocation();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     toast("Logged out successfully");
     navigate("/");
   };

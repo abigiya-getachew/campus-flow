@@ -10,11 +10,22 @@ function userId(req: AuthRequest): string {
   return req.userId;
 }
 
+/**
+ * Converts a Mongoose sub-document to a plain object with a string `id` field,
+ * without leaking the internal `_id` or `__v` fields.
+ */
+function toPublic(doc: { _id: unknown; toObject: () => Record<string, unknown> }) {
+  const { _id, __v, ...rest } = doc.toObject();
+  void _id; // intentionally excluded
+  void __v;
+  return { id: String(doc._id), ...rest };
+}
+
 function serializeDashboard(dashboard: InstanceType<typeof Dashboard>) {
   return {
-    assignments: dashboard.assignments.map((item) => ({ id: String(item._id), ...item.toObject() })),
-    courses: dashboard.courses.map((item) => ({ id: String(item._id), ...item.toObject() })),
-    schedule: dashboard.schedule.map((item) => ({ id: String(item._id), ...item.toObject() })),
+    assignments: dashboard.assignments.map(toPublic),
+    courses: dashboard.courses.map(toPublic),
+    schedule: dashboard.schedule.map(toPublic),
     gpa: dashboard.gpa,
     targetGpa: dashboard.targetGpa,
   };
@@ -47,6 +58,14 @@ async function getDashboard(req: AuthRequest) {
   );
 }
 
+// ── Color validation helper ────────────────────────────────────────────────
+const HEX_COLOR = /^#[0-9a-fA-F]{3,8}$/;
+function isValidColor(v: unknown): v is string {
+  return typeof v === "string" && HEX_COLOR.test(v);
+}
+
+// ── Routes ─────────────────────────────────────────────────────────────────
+
 router.get("/", async (req: AuthRequest, res) => {
   try {
     const dashboard = await getDashboard(req);
@@ -64,16 +83,18 @@ router.post("/assignments", async (req: AuthRequest, res) => {
       typeof title !== "string" || !title.trim() || typeof course !== "string" || !course.trim() ||
       typeof courseCode !== "string" || !courseCode.trim() || typeof due !== "string" ||
       typeof dueLabel !== "string" || typeof effort !== "string" || typeof effortHours !== "number" ||
-      typeof weight !== "number" || typeof color !== "string"
+      !Number.isFinite(effortHours) || effortHours < 0 ||
+      typeof weight !== "number" || !Number.isFinite(weight) || weight < 0 || weight > 100 ||
+      !isValidColor(color)
     ) {
-      res.status(400).json({ message: "Assignment details are incomplete." });
+      res.status(400).json({ message: "Assignment details are incomplete or invalid." });
       return;
     }
     const dashboard = await getDashboard(req);
     dashboard.assignments.push({ title: title.trim(), course: course.trim(), courseCode: courseCode.trim(), due, dueLabel, effort, effortHours, weight, status, color, note });
     await dashboard.save();
     const assignment = dashboard.assignments[dashboard.assignments.length - 1];
-    res.status(201).json({ assignment: { id: String(assignment._id), ...assignment.toObject() } });
+    res.status(201).json({ assignment: toPublic(assignment) });
   } catch (error) {
     console.error("Assignment creation failed:", error);
     res.status(500).json({ message: "Could not add the assignment." });
@@ -94,7 +115,7 @@ router.patch("/assignments/:assignmentId", async (req: AuthRequest, res) => {
     }
     assignment.status = req.body.status;
     await dashboard.save();
-    res.json({ assignment: { id: String(assignment._id), ...assignment.toObject() } });
+    res.json({ assignment: toPublic(assignment) });
   } catch (error) {
     console.error("Assignment update failed:", error);
     res.status(500).json({ message: "Could not update the assignment." });
@@ -105,19 +126,22 @@ router.post("/courses", async (req: AuthRequest, res) => {
   try {
     const { name, code, instructor, grade, color, completed, total } = req.body ?? {};
     if (
-      typeof name !== "string" || !name.trim() || typeof code !== "string" || !code.trim() ||
-      typeof instructor !== "string" || !instructor.trim() || typeof grade !== "number" ||
-      grade < 0 || grade > 100 || typeof color !== "string" || !color.trim() ||
-      typeof completed !== "number" || completed < 0 || typeof total !== "number" || total < 0
+      typeof name !== "string" || !name.trim() || name.length > 120 ||
+      typeof code !== "string" || !code.trim() || code.length > 30 ||
+      typeof instructor !== "string" || !instructor.trim() || instructor.length > 120 ||
+      typeof grade !== "number" || !Number.isFinite(grade) || grade < 0 || grade > 100 ||
+      !isValidColor(color) ||
+      typeof completed !== "number" || !Number.isFinite(completed) || completed < 0 ||
+      typeof total !== "number" || !Number.isFinite(total) || total < 0
     ) {
-      res.status(400).json({ message: "Course details are incomplete." });
+      res.status(400).json({ message: "Course details are incomplete or invalid." });
       return;
     }
     const dashboard = await getDashboard(req);
     const course = dashboard.courses.create({ name: name.trim(), code: code.trim(), instructor: instructor.trim(), grade, letter: letterForGrade(grade), color: color.trim(), completed, total });
     dashboard.courses.push(course);
     await dashboard.save();
-    res.status(201).json({ course: { id: String(course._id), ...course.toObject() } });
+    res.status(201).json({ course: toPublic(course) });
   } catch (error) {
     console.error("Course creation failed:", error);
     res.status(500).json({ message: "Could not add the course." });
@@ -132,24 +156,63 @@ router.patch("/courses/:courseId", async (req: AuthRequest, res) => {
       res.status(404).json({ message: "Course not found." });
       return;
     }
-    const updates = req.body ?? {};
-    if (updates.grade !== undefined && (typeof updates.grade !== "number" || updates.grade < 0 || updates.grade > 100)) {
-      res.status(400).json({ message: "Grade must be between 0 and 100." });
+
+    const { name, code, instructor, color, completed, total, grade } = req.body ?? {};
+
+    // ── Validate each accepted field before touching the document ────────────
+    if (grade !== undefined) {
+      if (typeof grade !== "number" || !Number.isFinite(grade) || grade < 0 || grade > 100) {
+        res.status(400).json({ message: "Grade must be a finite number between 0 and 100." });
+        return;
+      }
+    }
+    if (name !== undefined) {
+      if (typeof name !== "string" || !name.trim() || name.length > 120) {
+        res.status(400).json({ message: "Course name must be a non-empty string (max 120 chars)." });
+        return;
+      }
+    }
+    if (code !== undefined) {
+      if (typeof code !== "string" || !code.trim() || code.length > 30) {
+        res.status(400).json({ message: "Course code must be a non-empty string (max 30 chars)." });
+        return;
+      }
+    }
+    if (instructor !== undefined) {
+      if (typeof instructor !== "string" || !instructor.trim() || instructor.length > 120) {
+        res.status(400).json({ message: "Instructor name must be a non-empty string (max 120 chars)." });
+        return;
+      }
+    }
+    if (color !== undefined && !isValidColor(color)) {
+      res.status(400).json({ message: "Color must be a valid hex color (e.g. #ff0000)." });
       return;
     }
-    if (updates.grade !== undefined) {
-      course.grade = updates.grade;
-      course.letter = letterForGrade(updates.grade);
+    if (completed !== undefined) {
+      if (typeof completed !== "number" || !Number.isFinite(completed) || completed < 0) {
+        res.status(400).json({ message: "Completed must be a non-negative finite number." });
+        return;
+      }
     }
-    if (updates.name !== undefined) course.name = updates.name;
-    if (updates.code !== undefined) course.code = updates.code;
-    if (updates.instructor !== undefined) course.instructor = updates.instructor;
-    if (updates.color !== undefined) course.color = updates.color;
-    if (updates.completed !== undefined) course.completed = updates.completed;
-    if (updates.total !== undefined) course.total = updates.total;
+    if (total !== undefined) {
+      if (typeof total !== "number" || !Number.isFinite(total) || total < 0) {
+        res.status(400).json({ message: "Total must be a non-negative finite number." });
+        return;
+      }
+    }
+
+    // Apply validated updates.
+    if (grade !== undefined) { course.grade = grade; course.letter = letterForGrade(grade); }
+    if (name !== undefined) course.name = name.trim();
+    if (code !== undefined) course.code = code.trim();
+    if (instructor !== undefined) course.instructor = instructor.trim();
+    if (color !== undefined) course.color = color;
+    if (completed !== undefined) course.completed = completed;
+    if (total !== undefined) course.total = total;
+
     dashboard.gpa = calculateGpa(dashboard.courses);
     await dashboard.save();
-    res.json({ course: { id: String(course._id), ...course.toObject() }, gpa: dashboard.gpa });
+    res.json({ course: toPublic(course), gpa: dashboard.gpa });
   } catch (error) {
     console.error("Course update failed:", error);
     res.status(500).json({ message: "Could not update the course." });

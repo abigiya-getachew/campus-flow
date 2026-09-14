@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { ArrowRight, Eye, EyeOff, GraduationCap, Mail, Lock } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { AuthHeader } from "@/components/auth/AuthHeader";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -33,17 +34,7 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f7f8fa] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        {/* Logo and header */}
-        <div className="text-center">
-          <Link href="/" className="inline-flex items-center justify-center gap-3 mb-6">
-            <span className="flex items-center justify-center rounded-xl bg-gradient-to-br from-brand-600 to-brand-700 h-12 w-12 text-white">
-              <GraduationCap className="h-6 w-6" />
-            </span>
-            <span className="font-display text-2xl tracking-[-0.04em] text-[#1e2433]">campusflow</span>
-          </Link>
-          <h2 className="font-display text-3xl tracking-[-0.04em] text-[#1e2433]">Welcome back</h2>
-          <p className="mt-2 text-sm text-[#747b88]">Sign in to your account to continue</p>
-        </div>
+        <AuthHeader title="Welcome back" subtitle="Sign in to your account to continue" />
 
         {/* Login form */}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
