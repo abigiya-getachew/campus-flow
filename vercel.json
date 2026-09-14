@@ -1,0 +1,12 @@
+{
+  "framework": "vite",
+  "installCommand": "cd client && pnpm install --frozen-lockfile",
+  "buildCommand": "cd client && pnpm build",
+  "outputDirectory": "client/dist",
+  "rewrites": [
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
