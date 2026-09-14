@@ -2,6 +2,8 @@ export interface ApiRequestOptions extends RequestInit {
   defaultErrorMessage?: string;
 }
 
+const API_BASE_URL = (import.meta.env.VITE_API_URL ?? "").replace(/\/$/, "");
+
 /**
  * Thin fetch wrapper used by every API call in the app.
  *
@@ -16,7 +18,7 @@ export async function apiRequest<T>(
 ): Promise<T> {
   const { defaultErrorMessage = "Something went wrong. Please try again.", ...fetchOptions } = options;
 
-  const response = await fetch(url, {
+  const response = await fetch(`${API_BASE_URL}${url}`, {
     ...fetchOptions,
     credentials: "include",
     headers: {

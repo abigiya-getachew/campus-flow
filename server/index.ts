@@ -6,13 +6,8 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { createServer } from "http";
 import mongoose from "mongoose";
-import path from "path";
-import { fileURLToPath } from "url";
 import authRoutes from "./routes/auth.js";
 import dashboardRoutes from "./routes/dashboard.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 async function startServer() {
   const mongoUri = process.env.MONGODB_URI;
@@ -56,18 +51,11 @@ async function startServer() {
   // ── API routes ────────────────────────────────────────────────────────────
   app.use("/api/auth", authRoutes);
   app.use("/api/dashboard", dashboardRoutes);
+  app.get("/health", (_req, res) => {
+    res.json({ status: "ok" });
+  });
   app.use("/api", (_req, res) => {
     res.status(404).json({ message: "Not found" });
-  });
-
-  // ── Static client bundle ──────────────────────────────────────────────────
-  const staticPath = path.resolve(__dirname, "..", "client", "dist");
-  app.use(express.static(staticPath));
-
-  // ── SPA fallback — explicitly exclude /api/* so mis-typed API paths return
-  //    the 404 handler above rather than index.html with a 200. ──────────────
-  app.get(/^(?!\/api).*/, (_req, res) => {
-    res.sendFile(path.join(staticPath, "index.html"));
   });
 
   const port = process.env.PORT || 3000;
